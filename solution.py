@@ -1,0 +1,1 @@
+## Solution au probleme du jira automatiosation.
