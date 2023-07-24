@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class PredictionAppConfig(AppConfig):
+class EvaluationAppConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'prediction_app'
+    name = 'evaluation_app'
