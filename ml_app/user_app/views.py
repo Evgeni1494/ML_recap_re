@@ -2,7 +2,7 @@ from django.shortcuts import render,redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .forms import SignupForm, LoginForm
-from .models import User
+from .models import User, FilmData
 from django.contrib.auth import authenticate, login
 from django.contrib.auth import logout as django_logout
 import uuid
@@ -114,9 +114,12 @@ def reset_password_confirm(request, reset_token):
 
 @login_required
 def dashboard_view(request):
-    return render(request, 'dashboard.html')
+    # Récupérer les 10 films classés selon la prédiction du plus grand au plus petit
+    films = FilmData.objects.all().order_by('-prediction')[:10]
+    context = {'films': films}
+    return render(request, 'dashboard.html', context)
 
 
 
 
-# 97523818-83d3-441c-8683-403f98ffcdb0
+
