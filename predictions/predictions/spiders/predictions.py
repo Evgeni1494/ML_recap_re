@@ -55,26 +55,12 @@ cursor.close()
 conn.close()
 
 
-############fction liste  string ########
+############       fonction conversion liste en STR           ###################
 def l_s(a):
     for i in a:
         return i
 
-def extract_duration_in_minutes(duration_str):
-    # Supprimer les caractères "\n" au début et à la fin de la chaîne
-    cleaned_duration_str = duration_str.strip()
 
-    # Utiliser une expression régulière pour extraire les heures et les minutes
-    pattern = r'(\d+)h (\d+)min'
-    match = re.match(pattern, cleaned_duration_str)
-    
-    if match:
-        hours = int(match.group(1))
-        minutes = int(match.group(2))
-        total_minutes = hours * 60 + minutes
-        return total_minutes
-    else:
-        return None
 ###################################################################### fction pour ajout valeures à la table créée   ###############
 
 def ajouter_valeures(titre, duree, date_de_sortie, genres, directeur,distributeur, acteurs, nationalite) -> int: 
