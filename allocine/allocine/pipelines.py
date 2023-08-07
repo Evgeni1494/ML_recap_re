@@ -18,7 +18,7 @@ class AlloCinePipeline:
     def __init__(self):
         self.client = pymongo.MongoClient(ATLAS_KEY)
         self.db = self.client["ML_re"]
-        self.collection = self.db["films2000_1000_1748"]
+        self.collection = self.db["filmsALL"]
 
 
     def process_item(self, item, spider):
@@ -49,5 +49,5 @@ class AlloCinePipeline:
         return item
 
     
-    def close_spider(self, spider):
-        pass
+    # def close_spider(self, spider):
+    #     pass

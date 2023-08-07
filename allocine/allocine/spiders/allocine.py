@@ -30,8 +30,8 @@ class AlloCineSpider(CrawlSpider):
         # }
         # for decennie, decoupage_de_pages in nombres_de_pages_par_decennies.items():
                 # for e in decoupage_de_pages:
-        decennie = 2000        
-        for i in range(1000,1530):
+        decennie = 2010        
+        for i in range(1000,1748):
             self.page_counter = i
             url = f"https://www.allocine.fr/films/decennie-{decennie}/?page={i}"
             yield scrapy.Request(url, callback=self.parse_start, headers={'User-Agent': self.user_agent})
