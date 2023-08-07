@@ -8,11 +8,13 @@ class PredictionsSpider(CrawlSpider):
     allowed_domains = ["allocine.fr"]
     
     def start_requests(self):
-        date_actuelle = datetime.now()
+        
+        date_actuelle = datetime.now()   
         jour_de_semaine_actuel = date_actuelle.weekday()
         jours_jusqua_mercredi = (2 - jour_de_semaine_actuel) % 7
         mercredi_suivant = date_actuelle + timedelta(days=jours_jusqua_mercredi)
-        date_prochain_mercredi = mercredi_suivant.strftime("%d/%m/%Y")
+        date_prochain_mercredi = mercredi_suivant.strftime("%d/%m/%Y") # Récupere la date du jour et se place au mercredi suivant
+        
         jour = date_prochain_mercredi[0:2]
         mois = date_prochain_mercredi[3:5]
         annee = date_prochain_mercredi[6:10]
@@ -49,18 +51,4 @@ class PredictionsSpider(CrawlSpider):
         items['nationalite'] = nationalite
         yield items
         
-        # genres = ', '.join(genres)
-        # acteurs = ', '.join(acteurs)
-        # if not os.path.exists('movies.csv'):
-        #     with open('movies.csv', 'a', newline='', encoding='utf-8') as csvfile:
-        #         writer = csv.writer(csvfile)
-        #         writer.writerow(['titre', 'titre_original', 'duree', 'date_de_sortie', 'genres', 'directeur', 'acteurs', 'synopsis', 'note_presse', 'nationalite'])
-        # with open('movies.csv', 'a', newline='', encoding='utf-8') as csvfile:
-        #     writer = csv.writer(csvfile)
-
-        #     # Check if the file is empty, if yes, write the header
-        #     if csvfile.tell() == 0:
-        #         writer.writerow(['titre', 'titre_orignal', 'duree', 'date_de_sortie', 'genres', 'directeur', 'acteurs', 'synopsis', 'note_presse', 'nationalite'])
-
-        #     # Write the data
-        #     writer.writerow([titre, titre_original, duree[0], date_de_sortie[0], genres[0], directeur[0], acteurs, nationalite[0]])            
+           
