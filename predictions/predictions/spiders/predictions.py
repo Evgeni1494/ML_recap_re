@@ -43,7 +43,9 @@ cursor.execute("""
             directeur TEXT NOT NULL,
             distributeur TEXT,
             acteurs VARCHAR(70) NOT NULL,
-            nationalite TEXT NOT NULL
+            nationalite TEXT NOT NULL,
+            prediction_film FLOAT DEFAULT NULL,
+            ecart_eval_predict FLOAT DEFAULT NULL
             )
 """)
 
@@ -57,8 +59,7 @@ conn.close()
 
 ############       fonction conversion liste en STR           ###################
 def l_s(a):
-    for i in a:
-        return i
+    return ",".join(map(str, a))
 
 
 ###################################################################### fction pour ajout valeures à la table créée   ###############
@@ -71,7 +72,7 @@ def ajouter_valeures(titre, duree, date_de_sortie, genres, directeur,distributeu
     cursor = conn.cursor()
     cursor.execute(""" 
         INSERT INTO actualisation_scrap
-        VALUES ( ?, ?, ?, ?,?,?,?,?)           
+        VALUES ( ?, ?, ?, ?,?,?,?,?, NULL, NULL)           
         """, ( titre, duree, date_de_sortie, genres, directeur,distributeur, acteurs, nationalite))       
 
     conn.commit()

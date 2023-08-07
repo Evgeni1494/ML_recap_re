@@ -185,3 +185,26 @@ def extraire_poster(id_du_film:int) -> int:
             return ''
     except requests.exceptions.RequestException as e:
         print("Error fetching data:", e)
+        
+        
+        
+        
+def l_s(a):
+    for i in a:
+        return i
+
+def extract_duration_in_minutes(duration_str):
+    # Supprimer les caractères "\n" au début et à la fin de la chaîne
+    cleaned_duration_str = duration_str.strip()
+
+    # Utiliser une expression régulière pour extraire les heures et les minutes
+    pattern = r'(\d+)h (\d+)min'
+    match = re.match(pattern, cleaned_duration_str)
+    
+    if match:
+        hours = int(match.group(1))
+        minutes = int(match.group(2))
+        total_minutes = hours * 60 + minutes
+        return total_minutes
+    else:
+        return None
