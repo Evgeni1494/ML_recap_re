@@ -35,11 +35,13 @@ class PredictionsSpider(CrawlSpider):
         else:
             titre_original = ''
         duree = response.css('div.meta-body-item.meta-body-info::text')[3].get()
-        date_de_sortie = response.css('div.meta-body-item.meta-body-info span.blue-link::text').get()
+        date_de_sortie = response.css('div.meta-body-item.meta-body-info>span.blue-link::text').get()
         genres = response.css('div.meta-body-item.meta-body-info>span::text')[3:].getall()
-        directeur = response.css('div.meta-body-item.meta-body-direction span.blue-link::text').get()
+        directeur = response.css('div.meta-body-item.meta-body-direction>span.blue-link::text').get()
+        distributeur = response.css('div.item:nth-child(3)>:nth-child(2)::text').get()
         acteurs = response.css('.meta-body-actor.meta-body-item>span::text')[1:].getall()
         nationalite = response.css('span.that>.nationality::text').getall()
+
 
         items['titre'] = titre.strip()
         items['titre_original'] = titre_original.strip()
@@ -47,8 +49,10 @@ class PredictionsSpider(CrawlSpider):
         items['date_de_sortie'] = date_de_sortie.strip()
         items['genres'] = genres
         items['directeur'] = directeur
+        items['distributeur'] = distributeur.strip()
         items['acteurs'] = acteurs
         items['nationalite'] = nationalite
+
         yield items
         
            

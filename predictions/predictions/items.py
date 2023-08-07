@@ -13,5 +13,7 @@ class PredictionsItem(scrapy.Item):
     date_de_sortie = scrapy.Field()
     genres = scrapy.Field()
     directeur = scrapy.Field()
+    distributeur = scrapy.Field()
     acteurs = scrapy.Field()
     nationalite = scrapy.Field()
+

@@ -14,7 +14,9 @@ class PredictionsPipeline:
         if os.path.exists('predi_films.csv'):   # Création et parametrage du csv
             os.remove('predi_films.csv')
         self.csvfile = open(f'predi_films.csv', mode='a+', newline='')
-        self.fieldnames = ['titre', 'titre_original', 'duree', 'date_de_sortie', 'genres', 'directeur', 'acteurs', 'nationalite', 'budget', 'poster']
+        self.fieldnames = ['titre', 'titre_original', 'duree', 'date_de_sortie', 'genres', 'directeur', 
+                           'distributeur',
+                           'acteurs', 'nationalite', 'budget', 'poster']
         self.writer = csv.DictWriter(self.csvfile, fieldnames=self.fieldnames)
         if self.csvfile.tell() == 0:
             self.writer.writeheader()
@@ -34,6 +36,7 @@ class PredictionsPipeline:
             'date_de_sortie': item.get('date_de_sortie'),
             'genres': item.get('genres'),
             'directeur': item.get('directeur'),
+            'distributeur': item.get('distributeur'),
             'acteurs': item.get('acteurs'),
             'nationalite': item.get('nationalite'),
             'budget': budget,
