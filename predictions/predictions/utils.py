@@ -208,3 +208,51 @@ def extract_duration_in_minutes(duration_str):
         return total_minutes
     else:
         return None
+    
+    
+import pandas as pd
+import ast
+import numpy as np
+
+# Function to transform date to the required format
+def transform_date(row):
+    date_string = row['date']
+    sortie_string = row['date_de_sortie']
+    
+    # Define a dictionary to map French month names to numbers
+    month_dict = {
+        'janvier': '01', 'février': '02', 'mars': '03', 'avril': '04', 
+        'mai': '05', 'juin': '06', 'juillet': '07', 'août': '08', 
+        'septembre': '09', 'octobre': '10', 'novembre': '11', 'décembre': '12'
+    }
+    
+    # Check if the date is "00/00/0000"
+    if date_string == "00/00/0000":
+        # Replace French month names with numbers in sortie_string
+        for month_name, month_number in month_dict.items():
+            sortie_string = sortie_string.replace(month_name, month_number)
+
+        # Convert the sortie date to the required format
+        date = pd.to_datetime(sortie_string, format="%d %m %Y", errors='coerce')
+    else:
+        # Convert to datetime format
+        date = pd.to_datetime(date_string, format="%d/%m/%Y", errors='coerce')
+        
+    # If the date conversion was successful
+    if pd.notna(date):
+        # Convert to ISO format and add the time
+        date_iso = date.isoformat() + "Z"
+    else:
+        date_iso = None
+
+    return date_iso
+
+
+
+def avoir_acteur1  (acteurs):
+    b=acteurs.split(',')
+    return b[0]
+
+def avoir_acteur2  (acteurs):
+    b=acteurs.split(',')
+    return b[1]

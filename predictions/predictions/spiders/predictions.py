@@ -15,8 +15,28 @@ import pyodbc
 import re
 load_dotenv()
 from datetime import datetime
+from predictions.utils import transform_date, avoir_acteur1, avoir_acteur2
+import pandas as pd
+
+df=pd.read_csv('csv_ev.csv')
+###########création de dico ###########
+sub_df = df[['directeur', 'acteur1', 'acteur2', 'director_success', 'acteur1_success', 'acteur2_success','cast_success']]
 
 
+director_dict = {}
+actor_dict = {}
+cast_dict={}
+for index, row in sub_df.iterrows():
+    director_dict[row['directeur']] = row['director_success']
+    actor_dict[row['acteur1']] = row['acteur1_success']
+    actor_dict[row['acteur2']] = row['acteur2_success']
+    cast_dict[row['cast_success']]= row ['cast_success']
+    
+# pr chaque acteur, réalisateur: ds chaque ligne j'ai un chiffre de succés qui lui est associé
+#>>> but est de reprendre 
+# data[['director_success', 'acteur1_success', 'acteur2_success']].mean(axis=1)
+# j'ai une valeur qui reprend la moyenne de ces 3 données
+##############################################################################
 server='projet-affluence-cinema-mlrecap.database.windows.net'
 database='BDD_boxoffice'
 username = 'project_affluence_cinema'
@@ -115,11 +135,19 @@ class PredictionsSpider(CrawlSpider):
             titre_original = ''
         duree = response.css('div.meta-body-item.meta-body-info::text')[3].get()
         date_de_sortie = response.css('div.meta-body-item.meta-body-info>span.blue-link::text').get()
+        
         genres = l_s(response.css('div.meta-body-item.meta-body-info>span::text')[3:].getall())
         directeur = response.css('div.meta-body-item.meta-body-direction>span.blue-link::text').get()
         distributeur = response.css('div.item:nth-child(3)>:nth-child(2)::text').get()
         acteurs = l_s(response.css('.meta-body-actor.meta-body-item>span::text')[1:].getall())
         nationalite = l_s(response.css('span.that>.nationality::text').getall())
+        
+        ############# nettoyage avant insertion SQL   ##########
+        titre=titre.str.strip().str.lower()
+        date_de_sortie=transform_date(date_de_sortie)
+        acteur1=avoir_acteur1(acteurs)
+        acteur2=avoir_acteur2(acteurs)
+       
         print(titre, duree, date_de_sortie, genres, directeur, distributeur, acteurs, nationalite)
         ajouter_valeures(titre, duree, date_de_sortie, genres, directeur, distributeur, acteurs, nationalite)
         print('okkkkkkkkkk')
@@ -135,7 +163,51 @@ class PredictionsSpider(CrawlSpider):
 
         # yield items
 
+df_test = pd.DataFrame({
+    'title': ['Pyramide'],
+    'country': ['France'],
+    'genre': ['Comédie'],
+    'date': ['Tous publics'],
+    'durée': [91],
+    'acteurs': ['Agnès Jaoui']
+    'directeur': ['Marie Garel-Weiss'],
+    'acteur1_success': ['Daphne Patakia'],
+    'acteur2_success': ['Benoît Poelvoord'],
+    ,'director_success': ['Benoît Poelvoord'],
+    'cast_success': ['Benoît Poelvoord'],
+    'numero_semaine': [40],
 
+})
+
+director_dict_lower = {director.lower(): value for director, value in director_dict.items()}
+actor_dict_lower = {actor.lower(): value for actor, value in actor_dict.items()}
+cast_success=(acteur1_success + acteur2_success + director_success)/3
+
+acteur1_lower = acteur1.lower()
+if acteur1_lower in actor_dict_lower:
+    acteur1_success = actor_dict_lower[acteur1_lower]
+else:
+    acteur1_success = 32435
+    
+acteur2_lower = acteur2.lower()
+if acteur1_lower in actor_dict_lower:
+    acteur1_success = actor_dict_lower[acteur1_lower]
+else:
+    acteur1_success = 32435
+    
+acteur2_lower = directeur.lower()
+if acteur1_lower in actor_dict_lower:
+    acteur1_success = actor_dict_lower[acteur1_lower]
+else:
+    acteur1_success = 36701
+    
+     
+acteur2_success=acteur2.str.lower().map(actor_dict_lower).fillna(32435)
+director_success=directeur.str.lower().map(director_dict_lower).fillna(36701)
+# Appliquer le mappage tout en convertissant les noms dans les données en minuscules
+# df_test['directeur'] = df_test['directeur'].str.lower().map(director_dict_lower).fillna(36701)
+# df_test['acteur1'] = df_test['acteur1'].str.lower().map(actor_dict_lower).fillna(32435)
+# df_test['acteur2'] = df_test['acteur2'].str.lower().map(actor_dict_lower).fillna(32435)
 
 
 
