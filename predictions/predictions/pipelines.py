@@ -11,8 +11,6 @@ from .utils import extraire_id, extraire_budget, extraire_poster
 
 class PredictionsPipeline:
     def __init__(self):
-        if os.path.exists('predi_films.csv'):   # Création et parametrage du csv
-            os.remove('predi_films.csv')
         self.csvfile = open(f'predi_films.csv', mode='a+', newline='')
         self.fieldnames = ['titre', 'titre_original', 'duree', 'date_de_sortie', 'genres', 'directeur', 
                            'distributeur',
