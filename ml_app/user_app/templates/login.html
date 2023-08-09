@@ -1,10 +1,15 @@
 <!-- login.html -->
+{% extends "base.html" %}
 <!DOCTYPE html>
 <html>
+{% block content %}
 <head>
+{% load static %}
+<link rel="stylesheet" type="text/css" href="{% static 'user_app/style.css' %}">
     <title>Connexion</title>
 </head>
 <body>
+TEST
     <h2>Login</h2>
     <form method="POST">
         {% csrf_token %}
@@ -13,5 +18,6 @@
     </form>
     <a href="{% url 'user_app:reset_password' %}">Mot de passe oublié ?</a>
 </body>
+{% endblock %}
 </html>
 

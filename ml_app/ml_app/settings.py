@@ -14,9 +14,10 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 
 
 from pathlib import Path
-
+import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 
 # Quick-start development settings - unsuitable for production
@@ -28,7 +29,7 @@ SECRET_KEY = 'django-insecure-o&d)h*3g0x^tiz66v=mk%(h=ykv0+x)(_fzb)u4oi4bt^y^#r&
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # settings.py
@@ -74,7 +75,7 @@ ROOT_URLCONF = 'ml_app.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
