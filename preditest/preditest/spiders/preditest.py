@@ -5,15 +5,14 @@ import csv, os, scrapy
 
 
 
-## CMD = scrapy crawl predictions -a mode=normal && scrapy crawl predictions -a mode=moisdavant
+## CMD = scrapy crawl predictions && scrapy crawl moisprecedent
 
 class PreditestSpider(CrawlSpider):
     name = "preditest"
     allowed_domains = ["allocine.fr"]
     
     def start_requests(self):
-        mode = getattr(self, 'mode', 'normal')
-        
+
         date_actuelle = datetime.now()   
         jour_de_semaine_actuel = date_actuelle.weekday()
         jours_jusqua_mercredi = (2 - jour_de_semaine_actuel) % 7
@@ -67,10 +66,10 @@ class MoisPrecedentSpider(CrawlSpider):
     allowed_domains = ["allocine.fr"]
     
     def start_requests(self):
-        mode = getattr(self, 'mode', 'moisdavant') 
         
-        date_actuelle = datetime.now()   
-        dernier_jour_mois_precedent = ((date_actuelle.replace(day=1)) - timedelta(days=1)).strftime("%d/%m/%Y")
+        
+        date_du_jour = datetime.now()   
+        dernier_jour_mois_precedent = ((date_du_jour.replace(day=1)) - timedelta(days=1)).strftime("%d/%m/%Y")
 
         mois = dernier_jour_mois_precedent[3:5]
         annee = dernier_jour_mois_precedent[6:10]
