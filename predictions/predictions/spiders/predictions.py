@@ -53,9 +53,9 @@ cursor = conn.cursor()
 
 
 
-cursor.execute("DROP TABLE IF EXISTS actualisation_scrap")
+cursor.execute("DROP TABLE IF EXISTS actualisation_scrap1")
 cursor.execute(""" 
-       CREATE TABLE actualisation_scrap(
+       CREATE TABLE actualisation_scrap1(
             id INT PRIMARY KEY IDENTITY(1,1),
             title TEXT NOT NULL,
             country TEXT NOT NULL,
@@ -67,9 +67,6 @@ cursor.execute("""
             acteur2_success FLOAT NOT NULL,
             director_success FLOAT NOT NULL,
             cast_success FLOAT NOT NULL,
-            acteur1 TEXT NOT NULL,
-            acteur2 TEXT NOT NULL,
-            acteur3 TEXT NOT NULL,
             evaluation_ML FLOAT DEFAULT NULL,
             prediction_film FLOAT DEFAULT NULL,
             ecart_eval_predict FLOAT DEFAULT NULL
@@ -103,16 +100,16 @@ def get_first_name_from_string(names_string):
         return names_string# Si la liste est vide
 ###################################################################### fction pour ajout valeures à la table créée   ###############
 
-def ajouter_valeures(title, country,genre,date,durée,acteurs,acteur1_success,acteur2_success,director_success,cast_success,acteur1,acteur2,acteur3) -> int: 
+def ajouter_valeures(title, country,genre,date,durée,acteurs,acteur1_success,acteur2_success,director_success,cast_success) -> int: 
     conn_str = f'DRIVER={driver};SERVER={server};DATABASE={database};UID={username};PWD={password}'
     conn = pyodbc.connect(conn_str)
     
 # Créer un curseur
     cursor = conn.cursor()
     cursor.execute(""" 
-        INSERT INTO actualisation_scrap
-        VALUES ( ?, ?, ?, ?,?,?,?,?,?,?,?,?,?,NULL, NULL, NULL)           
-        """, ( title, country,genre,date,durée,acteurs,acteur1_success,acteur2_success,director_success,cast_success,acteur1,acteur2,acteur3))       
+        INSERT INTO actualisation_scrap1
+        VALUES ( ?, ?, ?, ?,?,?,?,?,?,?,NULL, NULL, NULL)           
+        """, ( title, country,genre,date,durée,acteurs,acteur1_success,acteur2_success,director_success,cast_success))       
 
     conn.commit()
     conn.close()
@@ -191,8 +188,8 @@ class PredictionsSpider(CrawlSpider):
         print(cast_success)
         
         print(title, country,genre,date,durée,acteurs,acteur1_success,acteur2_success,director_success,cast_success,acteur1,acteur2,acteur3)
-        ajouter_valeures(title, country,genre,date,durée,acteurs,acteur1_success,acteur2_success,director_success,cast_success,acteur1,acteur2,acteur3)
-        print('okkkkkkkkkk')
+        ajouter_valeures(title, country,genre,date,durée,acteurs,acteur1_success,acteur2_success,director_success,cast_success)
+        print('okkkkkkkkkkkkkkkkkkk')
         # items['titre'] = titre.strip()
         # items['titre_original'] = titre_original.strip()
         # items['duree'] = duree.strip()
@@ -205,7 +202,76 @@ class PredictionsSpider(CrawlSpider):
         # yield items
         
 # dico_genre:{'Comédie musicale': 'Comédie', 'Animation': 'Animation', 'Comédie': 'Comédie', 'Thriller': 'Thriller', 'Romance': 'Romance', 'Guerre': 'Guerre', 'Famille': 'Film familial', 'Drame': 'Drame', 'Comédie dramatique': 'Comédie dramatique', 'Musical': 'Musical', 'Arts Martiaux': 'Arts martiaux', 'Fantastique': 'Fantasy', 'Science fiction': 'Science Fiction', 'Western': 'Western', 'Action': 'Animation', 'Péplum': 'Péplum', 'Aventure': 'Aventure - Action'}
+class MoisPrecedentSpider(CrawlSpider):
+    
+    name = "moisprecedent"
+    allowed_domains = ["allocine.fr"]
+    
+    def start_requests(self):
+        mode = getattr(self, 'mode', 'moisdavant') 
+        
+        date_actuelle = datetime.now()   
+        dernier_jour_mois_precedent = ((date_actuelle.replace(day=1)) - timedelta(days=1)).strftime("%d/%m/%Y")
 
+        mois = dernier_jour_mois_precedent[3:5]
+        annee = dernier_jour_mois_precedent[6:10]
+        
+        url = f"https://www.allocine.fr/film/agenda/mois/mois-{annee}-{mois}/"
+        yield scrapy.Request(url, callback=self.parse_start)
+        
+    def parse_start(self, response):
+        for link in response.css('.month-movies-link::attr(href)').getall():
+            yield response.follow(link, self.parse_movie_details)
+           
+    def parse_movie_details(self, response):
+        items = PredictionsItem()
+        
+        title = response.css('.titlebar-title-lg::text').get()
+        # if response.css('div.meta-body-item>span.light::text')[-1].get().strip() == 'Titre original':
+        #     title = response.css('div.meta-body-item::text')[-1].get()
+        # else:
+        #     title = ''
+        durée = response.css('div.meta-body-item.meta-body-info::text')[3].get()
+        date = convert_to_iso8601(response.css('div.meta-body-item.meta-body-info>span.blue-link::text').get())
+        print(date)
+        genre = l_s(response.css('div.meta-body-item.meta-body-info>span::text')[3:].getall())
+        directeur = response.css('div.meta-body-item.meta-body-direction>span.blue-link::text').get()
+        distributeur = response.css('div.item:nth-child(3)>:nth-child(2)::text').get()
+        print(distributeur)
+        acteurs = l_s(response.css('.meta-body-actor.meta-body-item>span::text')[1:].getall())
+        country = l_s(response.css('span.that>.nationality::text').getall())
+        durée=convert_to_minutes(durée)
+        ############# nettoyage avant insertion SQL   ##########
+        title=title.strip().lower()
+        genre=map_genre(genre)
+        date=convert_to_iso8601(date)
+        print(date)
+        print(acteurs)
+        country=extract_first_name(country)
+        
+        acteur1=extract_first_name(acteurs)
+        acteur2=extract_2_name(acteurs)
+        acteur3=extract_3_name(acteurs)
+        # acteur1=acteur1[0]
+        # acteur2=acteur2[0]
+        print(type(acteur1))
+        
+        acteur1_success=map_acteur1(acteur1)
+        acteur2_success=map_acteur2(acteur2)
+        director_success=map_director(directeur)
+        
+        
+        print(acteur1)
+        print(acteur2)
+        print(acteur3)
+        print(acteur1_success)
+        cast_success=(acteur1_success + acteur2_success + director_success)/3
+        
+        print(cast_success)
+        
+        print(title, country,genre,date,durée,acteurs,acteur1_success,acteur2_success,director_success,cast_success,acteur1,acteur2,acteur3)
+        ajouter_valeures(title, country,genre,date,durée,acteurs,acteur1_success,acteur2_success,director_success,cast_success)
+        print('ok2222222222222222222222222222')
 # df_test = pd.DataFrame({
 #     'title': ['Pyramide'],
 #     'country': ['France'],
