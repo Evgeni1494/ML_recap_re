@@ -6,13 +6,13 @@ Connectez-vous à votre VM Azure :
 ssh -i /home/apprenant/.ssh/django_vm django_vm@20.123.74.176
 
 
-sudo docker pull evgeni1494/monappdjango:latest
-
-
-
 Arrêtez le conteneur actuel :
 Identifiez l'ID du conteneur actuellement 
 en cours d'exécution avec sudo docker ps, puis arrêtez-le avec sudo docker stop [CONTAINER_ID].
+
+
+
+sudo docker pull evgeni1494/monappdjango:latest
 
 
 sudo docker run -d -p 8000:8000 evgeni1494/monappdjango:latest

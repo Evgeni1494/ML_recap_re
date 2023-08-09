@@ -1,9 +1,9 @@
 
 {% extends "base.html" %}
-{% load static %}
+{% comment %} {% load static %} {% endcomment %}
 
 {% block content %}
-    <link rel="stylesheet" type="text/css" href="{% static 'monitoring_app/style.css' %}">
+    {% comment %} <link rel="stylesheet" type="text/css" href="{% static 'monitoring_app/style.css' %}"> {% endcomment %}
     <p>This is the monitoring page.</p>
     <p class="red-text">This text should appear in red.</p>
 {% endblock %}

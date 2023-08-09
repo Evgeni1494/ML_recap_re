@@ -1,9 +1,9 @@
 
 {% extends "base.html" %}
-{% load static %}
+{% comment %} {% load static %} {% endcomment %}
 
 {% block content %}
-    <link rel="stylesheet" type="text/css" href="{% static 'evaluation_app/style.css' %}">
+    {% comment %} <link rel="stylesheet" type="text/css" href="{% static 'evaluation_app/style.css' %}"> {% endcomment %}
     <p>This is the evaluation page.</p>
     <p class="red-text">This text should appear in red for evaluation.</p>
 {% endblock %}
