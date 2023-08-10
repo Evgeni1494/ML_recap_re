@@ -2,19 +2,25 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 {% block content %}
-  <style>
-    .film-details {
-      display: none;
-    }
 
-    .expand-button {
-      cursor: pointer;
-      background-color: #007bff;
-      color: #fff;
-      border: none;
-      padding: 5px 10px;
-      border-radius: 5px;
-    }
+    <h2>Dashboard</h2>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Prediction</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for movie in movies %}
+            <tr>
+                <td>{{ movie.title }}</td>
+                <td>{{ movie.Results|first }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
 
     /* Ajouter un peu d'espace entre les boutons et les détails */
     .film-row {
@@ -72,6 +78,7 @@
       });
     });
   </script>
+
 {% endblock %}
 
 

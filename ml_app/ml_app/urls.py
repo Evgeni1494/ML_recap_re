@@ -10,7 +10,4 @@ urlpatterns = [
     path('', include('monitoring_app.urls')),
 ]
 
-# Cette partie sert vos fichiers statiques via Django lorsque DEBUG est désactivé
-if not settings.DEBUG:
-    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
