@@ -12,6 +12,7 @@ from django.urls import reverse
 from datetime import datetime, timedelta
 
 
+
 def send_email_function():
     subject = 'Sujet de l\'e-mail'
     message = 'Contenu du message de l\'e-mail'
@@ -111,10 +112,113 @@ def reset_password_confirm(request, reset_token):
     return render(request, 'reset_password_confirm.html')
 
 
+def get_prediction(title, country, genre, date, durée, acteurs, 
+                   acteur1_success, acteur2_success, director_success, cast_success):
+    
+    # Define the request data
+    data = {
+        "Inputs": {
+            "data": [
+                {
+                    "title": title,
+                    "country": country,
+                    "genre": genre,
+                    "date": date,
+                    "durée": durée,
+                    "acteurs": acteurs,
+                    "acteur1_success": acteur1_success,
+                    "acteur2_success": acteur2_success,
+                    "director_success": director_success,
+                    "cast_success": cast_success
+                }
+            ]
+        },
+        "GlobalParameters": 0.0
+    }
+
+    # Convert the data to a string and encode it
+    body = str.encode(json.dumps(data))
+
+    # Define the API URL and key
+    url = 'https://movie-predictor.germanywestcentral.inference.ml.azure.com/score'
+    api_key = 'ga2YYNrFEWqxdIMGcSvO9xwJoFW0lZxJ'  # API KEY
+
+    # Define the headers for the request
+    headers = {
+        'Content-Type': 'application/json', 
+        'Authorization': 'Bearer ' + api_key, 
+        'azureml-model-deployment': 'movie-predictor'
+    }
+
+    # Make the request to the API
+    req = urllib.request.Request(url, body, headers)
+    
+    try:
+        response = urllib.request.urlopen(req)
+        result = response.read()
+        prediction = json.loads(result)
+        
+        # Adding title to the prediction dictionary
+        prediction['title'] = title
+        
+        # Assuming the prediction result is in the 'Results' key
+        if 'Results' in prediction:
+            prediction['Results'] = [value / 3000 for value in prediction['Results']]
+        
+        return prediction
+    except urllib.error.HTTPError as error:
+        return {"error": str(error.code), "message": error.read().decode("utf8", 'ignore')}
+
+
+
+def get_predictions_for_all_rows(request):
+    try:
+        # Connect to the Azure SQL database
+        connection = pyodbc.connect(
+            'DRIVER={ODBC Driver 18 for SQL Server};'
+            'SERVER=projet-affluence-cinema-mlrecap.database.windows.net;'
+            'DATABASE=BDD_boxoffice;'
+            'UID=project_affluence_cinema;'
+            'PWD=*Boxoffice1;'
+        )
+
+        # Execute the SQL query
+        query = "SELECT * FROM [dbo].[actualisation_scrap]"
+        data_frame = pd.read_sql_query(query, connection)
+
+        # Close the connection
+        connection.close()
+
+        predictions = []
+
+        # Iterate over each row in the data frame and get predictions
+        for _, row in data_frame.iterrows():
+            prediction = get_prediction(
+                title=row["title"],
+                country=row["country"],
+                genre=row["genre"],
+                date=row["date"],
+                durée=row["durée"],
+                acteurs=row["acteurs"],
+                acteur1_success=row["acteur1_success"],
+                acteur2_success=row["acteur2_success"],
+                director_success=row["director_success"],
+                cast_success=row["cast_success"]
+            )
+            predictions.append(prediction)
+
+        return {'predictions': predictions, 'is_empty': data_frame.empty}
+    except Exception as e:
+        return {'error_message': str(e)}
+
+
+
+
 
 
 @login_required
 def dashboard_view(request):
+
     # Récupérer les 10 films classés selon la prédiction du plus grand au plus petit
     # films = FilmData.objects.all().order_by('-prediction')[:10]
     # context = {'films': films}
@@ -155,6 +259,7 @@ def combined_view(request):
         # Récupérer les données des deux vues
         dashboard_view_data = dashboard_view(request)
         conn_sql_data = conn_sql(request)
+
 
         # Combinez les données
         combined_data = {
