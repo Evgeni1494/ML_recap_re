@@ -243,7 +243,7 @@ def conn_sql(request):
         # Convertir les dates en format de chaîne pour la requête SQL
         next_wednesday_str = next_wednesday.strftime('%Y-%m-%dT%H:%M:%S.%f')
         next_tuesday_str = next_tuesday.strftime('%Y-%m-%dT%H:%M:%S.%f')
-        query = f"SELECT * FROM [dbo].[actualisation_scrap] WHERE [date] BETWEEN '{next_wednesday_str}' AND '{next_tuesday_str}'"
+        query = f"SELECT * FROM [dbo].[actu_scrap_poster1] WHERE [date] BETWEEN '{next_wednesday_str}' AND '{next_tuesday_str}'"
         # query = "SELECT TOP (10) * FROM [dbo].[actualisation_scrap1]"
         data_frame = pd.read_sql_query(query, connection)
         
