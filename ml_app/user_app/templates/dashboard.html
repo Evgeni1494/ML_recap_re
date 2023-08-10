@@ -2,6 +2,11 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 {% block content %}
+  <h1>Run Scrapy Spider</h1>
+  <form action="{% url 'combined_view' %}" method="post">
+    {% csrf_token %}
+    <button type="submit">Run Spider</button>
+  </form>
 
     <h2>Dashboard</h2>
     <table border="1">
