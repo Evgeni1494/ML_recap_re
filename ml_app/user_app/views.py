@@ -62,7 +62,7 @@ def login_view(request):
             if user is not None:
                 login(request, user)
                 messages.success(request, f"Bienvenue {username} !")
-                return redirect('user_app:dashboard')  # Assurez-vous d'avoir une URL nommée 'dashboard' dans votre application 'user_app'
+                return redirect('user_app:combined_view')  # Assurez-vous d'avoir une URL nommée 'dashboard' dans votre application 'user_app'
             else:
                 messages.error(request, "Identifiants invalides")
     else:
@@ -176,7 +176,7 @@ def conn_sql(request):
     except Exception as e:
         return {'error_message': str(e)}
 
-
+@login_required
 def combined_view(request):
         """
         Récupère les données des fonctions `dashboard_view` et `conn_sql`, les combine,

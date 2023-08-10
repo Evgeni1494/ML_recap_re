@@ -92,6 +92,20 @@
             pointer-events: none;
             z-index: -1;
         }
+        nav {
+            text-align: right; /* positionne les éléments de la nav à droite */
+        }
+    
+        nav a.signup-button {
+            background-color: #8b0000;  /* rouge velours */
+            padding: 5px 10px;
+            border-radius: 5px;
+            color: white; /* texte blanc pour le bouton */
+        }
+    
+        nav a.signup-button:hover {
+            background-color: #a52a2a; /* un peu plus clair pour le survol */
+        }
     </style>
     
     
@@ -107,10 +121,18 @@
     <div class="halo-right"></div> <!-- Halo coin supérieur droit -->
     <div class="halo"></div>
     <header>
-        <nav>
+        <nav>{% if user.is_authenticated %}
             <a href="/dashboard">Dashboard</a>
             <a href="/evaluation">Evaluation</a>
             <a href="/monitoring">Monitoring</a>
+            <a href="{% url 'user_app:logout' %}">Déconnexion</a>
+            <div class="alert alert-success">
+                Bienvenue {{ user.username }} !
+            </div>
+            {% endif %}
+            {% if not user.is_authenticated %}
+            <a href="/signup">Signup</a>
+            {% endif %}
         </nav>
         
     </header>

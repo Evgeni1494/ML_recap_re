@@ -2,38 +2,9 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 {% block content %}
+    
 
-    <h2>Dashboard</h2>
-    <table border="1">
-        <thead>
-            <tr>
-                <th>Title</th>
-                <th>Prediction</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for movie in movies %}
-            <tr>
-                <td>{{ movie.title }}</td>
-                <td>{{ movie.Results|first }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-
-
-    /* Ajouter un peu d'espace entre les boutons et les détails */
-    .film-row {
-      margin-bottom: 10px;
-    }
   </style>
-
-  <h2>Dashboard</h2>
-  <div class="alert alert-success">
-    Bienvenue {{ user.username }} !
-  </div>
-  
-  <a href="{% url 'user_app:logout' %}">Déconnexion</a>
   
   <h1>Dashboard</h1>
 <table class="table table-bordered">
