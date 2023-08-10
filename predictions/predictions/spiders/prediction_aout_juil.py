@@ -15,7 +15,8 @@ import pyodbc
 import re
 load_dotenv()
 from datetime import datetime
-from predictions.utils import transform_date, avoir_acteur1, avoir_acteur2,avoir_acteur3, map_acteur1, map_acteur2, map_director,map_genre, convert_to_iso8601, extract_first_name, extract_2_name, extract_3_name, convert_to_minutes
+from predictions.utils import transform_date, avoir_acteur1, avoir_acteur2,avoir_acteur3, map_acteur1, map_acteur2, map_director,map_genre, convert_to_iso8601, extract_first_name, extract_2_name, extract_3_name, convert_to_minutes, get_prediction, extraire_id, extraire_budget, extraire_poster
+
 import pandas as pd
 
 # df=pd.read_csv('csv_ev.csv')
@@ -53,9 +54,9 @@ cursor = conn.cursor()
 
 
 
-cursor.execute("DROP TABLE IF EXISTS actualisation_scrap1")
+cursor.execute("DROP TABLE IF EXISTS actu_scrap_poster1")
 cursor.execute(""" 
-       CREATE TABLE actualisation_scrap1(
+       CREATE TABLE actu_scrap_poster1(
             id INT PRIMARY KEY IDENTITY(1,1),
             title TEXT NOT NULL,
             country TEXT NOT NULL,
@@ -67,9 +68,10 @@ cursor.execute("""
             acteur2_success FLOAT NOT NULL,
             director_success FLOAT NOT NULL,
             cast_success FLOAT NOT NULL,
-            evaluation_ML FLOAT DEFAULT NULL,
-            prediction_film FLOAT DEFAULT NULL,
-            ecart_eval_predict FLOAT DEFAULT NULL
+            lien_poster TEXT,
+            evaluation_ML FLOAT DEFAULT 0,
+            prediction_film FLOAT DEFAULT 0,
+            ecart_eval_predict FLOAT DEFAULT 0
             )
 """)
 
@@ -100,26 +102,26 @@ def get_first_name_from_string(names_string):
         return names_string# Si la liste est vide
 ###################################################################### fction pour ajout valeures à la table créée   ###############
 
-def ajouter_valeures(title, country,genre,date,durée,acteurs,acteur1_success,acteur2_success,director_success,cast_success) -> int: 
+def ajouter_valeures(title, country,genre,date,durée,acteurs,acteur1_success,acteur2_success,director_success,cast_success, lien_poster,evaluation_ML) -> int: 
     conn_str = f'DRIVER={driver};SERVER={server};DATABASE={database};UID={username};PWD={password}'
     conn = pyodbc.connect(conn_str)
     
 # Créer un curseur
     cursor = conn.cursor()
     cursor.execute(""" 
-        INSERT INTO actualisation_scrap1
-        VALUES ( ?, ?, ?, ?,?,?,?,?,?,?,NULL, NULL, NULL)           
-        """, ( title, country,genre,date,durée,acteurs,acteur1_success,acteur2_success,director_success,cast_success))       
+        INSERT INTO actu_scrap_poster1
+        VALUES ( ?, ?, ?, ?,?,?,?,?,?,?,?,?, 0, 0)           
+        """, ( title, country,genre,date,durée,acteurs,acteur1_success,acteur2_success,director_success,cast_success,lien_poster, evaluation_ML))       
 
     conn.commit()
     conn.close()
-    
+compteur=0
 ###################################################################################
 
 
 
 class PredictionsSpider(CrawlSpider):
-    name = "predictions"
+    name = "predictions11"
     allowed_domains = ["allocine.fr"]
     
     def start_requests(self):
@@ -134,37 +136,48 @@ class PredictionsSpider(CrawlSpider):
         mois = date_prochain_mercredi[3:5]
         annee = date_prochain_mercredi[6:10]
         
-        url = f"https://www.allocine.fr/film/agenda/mois/mois-{annee}-{mois}/"
-        yield scrapy.Request(url, callback=self.parse_start)
+        url1 = f"https://www.allocine.fr/film/agenda/mois/mois-{annee}-{mois}/"
+        yield scrapy.Request(url1, callback=self.parse_start1)
         
-    def parse_start(self, response):
+    
+        mode = getattr(self, 'mode', 'moisdavant') 
+        
+        date_actuelle = datetime.now()   
+        dernier_jour_mois_precedent = ((date_actuelle.replace(day=1)) - timedelta(days=1)).strftime("%d/%m/%Y")
+
+        mois = dernier_jour_mois_precedent[3:5]
+        annee = dernier_jour_mois_precedent[6:10]
+        
+        url2 = f"https://www.allocine.fr/film/agenda/mois/mois-{annee}-{mois}/"
+        yield scrapy.Request(url2, callback=self.parse_start2)
+        
+    def parse_start1(self, response):
+        compteur=0  
         for link in response.css('.month-movies-link::attr(href)').getall():
-            yield response.follow(link, self.parse_movie_details)
-           
-    def parse_movie_details(self, response):
-        items = PredictionsItem()
+            yield response.follow(link, self.parse_movie_details1)
         
+    def parse_movie_details1(self, response):
         title = response.css('.titlebar-title-lg::text').get()
         # if response.css('div.meta-body-item>span.light::text')[-1].get().strip() == 'Titre original':
         #     title = response.css('div.meta-body-item::text')[-1].get()
         # else:
         #     title = ''
-        durée = response.css('div.meta-body-item.meta-body-info::text')[3].get()
-        date = convert_to_iso8601(response.css('div.meta-body-item.meta-body-info>span.blue-link::text').get())
-        print(date)
+        duree = response.css('div.meta-body-item.meta-body-info::text')[3].get()
+        date1 = convert_to_iso8601(response.css('div.meta-body-item.meta-body-info>span.blue-link::text').get())
+        # print(date)
         genre = l_s(response.css('div.meta-body-item.meta-body-info>span::text')[3:].getall())
         directeur = response.css('div.meta-body-item.meta-body-direction>span.blue-link::text').get()
         distributeur = response.css('div.item:nth-child(3)>:nth-child(2)::text').get()
         print(distributeur)
         acteurs = l_s(response.css('.meta-body-actor.meta-body-item>span::text')[1:].getall())
         country = l_s(response.css('span.that>.nationality::text').getall())
-        durée=convert_to_minutes(durée)
+        durée=convert_to_minutes(duree)
         ############# nettoyage avant insertion SQL   ##########
         title=title.strip().lower()
         genre=map_genre(genre)
-        date=convert_to_iso8601(date)
+        date=convert_to_iso8601(date1)
         print(date)
-        print(acteurs)
+        print(f"acteur{acteurs}")
         country=extract_first_name(country)
         
         acteur1=extract_first_name(acteurs)
@@ -174,22 +187,44 @@ class PredictionsSpider(CrawlSpider):
         # acteur2=acteur2[0]
         print(type(acteur1))
         
+        # item['acteur1_success']=map_acteur1(acteur1)
+        # item['acteur2_success']=map_acteur2(acteur2)
+        # item['director_success']=map_director(directeur)
+        
         acteur1_success=map_acteur1(acteur1)
         acteur2_success=map_acteur2(acteur2)
         director_success=map_director(directeur)
-        
         
         print(acteur1)
         print(acteur2)
         print(acteur3)
         print(acteur1_success)
         cast_success=(acteur1_success + acteur2_success + director_success)/3
+        id_tmdb = extraire_id(titre=title,date_de_sortie=date1,duree=duree)
+        print('iddddddd____film',id_tmdb)
+        poster = extraire_poster(id_du_film=id_tmdb)
+        print('liennnnnn_posterrrrrrr',poster)
+        print(title, country,genre,date,durée,acteurs,acteur1_success,acteur2_success,director_success,cast_success)
+        prediction=get_prediction(title, country,genre,date,durée,acteurs,acteur1_success,acteur2_success,director_success,cast_success)
+        # prediction=prediction['results']
+        prediction = prediction['Results'][0]
+
+# Formatting the numeric value to display two decimal places
+        prediction= '{:.2f}'.format(prediction)
+        prediction=float(prediction)
+        if prediction<=0:
+             prediction=abs(prediction)
+        print('IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIICCCCCCIIIIIIIIIIII',prediction)
+        print('IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIICCCCCCIIIIIIIIIIII',type(prediction))
+        # item['cast_success']=(acteur1_success + acteur2_success + director_success)/3
         
         print(cast_success)
-        
+        print('ici les valeurs',title, country,genre,date,durée,acteurs,acteur1_success,acteur2_success,director_success,cast_success,acteur1,acteur2,acteur3)
+        ajouter_valeures(title, country,genre,date,durée,acteurs,acteur1_success,acteur2_success,director_success,cast_success,poster, prediction)
         print(title, country,genre,date,durée,acteurs,acteur1_success,acteur2_success,director_success,cast_success,acteur1,acteur2,acteur3)
-        ajouter_valeures(title, country,genre,date,durée,acteurs,acteur1_success,acteur2_success,director_success,cast_success)
         print('okkkkkkkkkkkkkkkkkkk')
+        compteur+=1
+        print('arr1', compteur)
         # items['titre'] = titre.strip()
         # items['titre_original'] = titre_original.strip()
         # items['duree'] = duree.strip()
@@ -200,53 +235,37 @@ class PredictionsSpider(CrawlSpider):
         # items['acteurs'] = acteurs
         # items['nationalite'] = nationalite
         # yield items
-        
-# dico_genre:{'Comédie musicale': 'Comédie', 'Animation': 'Animation', 'Comédie': 'Comédie', 'Thriller': 'Thriller', 'Romance': 'Romance', 'Guerre': 'Guerre', 'Famille': 'Film familial', 'Drame': 'Drame', 'Comédie dramatique': 'Comédie dramatique', 'Musical': 'Musical', 'Arts Martiaux': 'Arts martiaux', 'Fantastique': 'Fantasy', 'Science fiction': 'Science Fiction', 'Western': 'Western', 'Action': 'Animation', 'Péplum': 'Péplum', 'Aventure': 'Aventure - Action'}
-class MoisPrecedentSpider(CrawlSpider):
     
-    name = "moisprecedent"
-    allowed_domains = ["allocine.fr"]
-    
-    def start_requests(self):
-        mode = getattr(self, 'mode', 'moisdavant') 
         
-        date_actuelle = datetime.now()   
-        dernier_jour_mois_precedent = ((date_actuelle.replace(day=1)) - timedelta(days=1)).strftime("%d/%m/%Y")
-
-        mois = dernier_jour_mois_precedent[3:5]
-        annee = dernier_jour_mois_precedent[6:10]
-        
-        url = f"https://www.allocine.fr/film/agenda/mois/mois-{annee}-{mois}/"
-        yield scrapy.Request(url, callback=self.parse_start)
-        
-    def parse_start(self, response):
+    def parse_start2(self, response):
+        compteur=0  
         for link in response.css('.month-movies-link::attr(href)').getall():
-            yield response.follow(link, self.parse_movie_details)
+            yield response.follow(link, self.parse_movie_details2)
            
-    def parse_movie_details(self, response):
-        items = PredictionsItem()
-        
+    def parse_movie_details2(self, response):
+        # items = PredictionsItem()
+        # item={}
         title = response.css('.titlebar-title-lg::text').get()
         # if response.css('div.meta-body-item>span.light::text')[-1].get().strip() == 'Titre original':
         #     title = response.css('div.meta-body-item::text')[-1].get()
         # else:
         #     title = ''
-        durée = response.css('div.meta-body-item.meta-body-info::text')[3].get()
-        date = convert_to_iso8601(response.css('div.meta-body-item.meta-body-info>span.blue-link::text').get())
-        print(date)
+        duree = response.css('div.meta-body-item.meta-body-info::text')[3].get()
+        date1 = convert_to_iso8601(response.css('div.meta-body-item.meta-body-info>span.blue-link::text').get())
+        # print(date)
         genre = l_s(response.css('div.meta-body-item.meta-body-info>span::text')[3:].getall())
         directeur = response.css('div.meta-body-item.meta-body-direction>span.blue-link::text').get()
         distributeur = response.css('div.item:nth-child(3)>:nth-child(2)::text').get()
         print(distributeur)
         acteurs = l_s(response.css('.meta-body-actor.meta-body-item>span::text')[1:].getall())
         country = l_s(response.css('span.that>.nationality::text').getall())
-        durée=convert_to_minutes(durée)
+        durée=convert_to_minutes(duree)
         ############# nettoyage avant insertion SQL   ##########
         title=title.strip().lower()
         genre=map_genre(genre)
-        date=convert_to_iso8601(date)
+        date=convert_to_iso8601(date1)
         print(date)
-        print(acteurs)
+        print(f"acteur{acteurs}")
         country=extract_first_name(country)
         
         acteur1=extract_first_name(acteurs)
@@ -256,22 +275,115 @@ class MoisPrecedentSpider(CrawlSpider):
         # acteur2=acteur2[0]
         print(type(acteur1))
         
+        # item['acteur1_success']=map_acteur1(acteur1)
+        # item['acteur2_success']=map_acteur2(acteur2)
+        # item['director_success']=map_director(directeur)
+        
         acteur1_success=map_acteur1(acteur1)
         acteur2_success=map_acteur2(acteur2)
         director_success=map_director(directeur)
-        
         
         print(acteur1)
         print(acteur2)
         print(acteur3)
         print(acteur1_success)
         cast_success=(acteur1_success + acteur2_success + director_success)/3
+        id_tmdb = extraire_id(titre=title,date_de_sortie=date1,duree=duree)
+        print('iddddddd____film',id_tmdb)
+        poster = extraire_poster(id_du_film=id_tmdb)
+        print('liennnnnn_posterrrrrrr',poster)
+        print(title, country,genre,date,durée,acteurs,acteur1_success,acteur2_success,director_success,cast_success)
+        prediction=get_prediction(title, country,genre,date,durée,acteurs,acteur1_success,acteur2_success,director_success,cast_success)
+        # prediction=prediction['results']
+        prediction = prediction['Results'][0]
+
+# Formatting the numeric value to display two decimal places
+        prediction= '{:.2f}'.format(prediction)
+        prediction=float(prediction)
+        if prediction<=0:
+             prediction=abs(prediction)
+        print('IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIICCCCCCIIIIIIIIIIII',prediction)
+        print('IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIICCCCCCIIIIIIIIIIII',type(prediction))
+        # item['cast_success']=(acteur1_success + acteur2_success + director_success)/3
         
         print(cast_success)
-        
+        print('ici les valeurs',title, country,genre,date,durée,acteurs,acteur1_success,acteur2_success,director_success,cast_success,acteur1,acteur2,acteur3)
+        ajouter_valeures(title, country,genre,date,durée,acteurs,acteur1_success,acteur2_success,director_success,cast_success,poster, prediction)
         print(title, country,genre,date,durée,acteurs,acteur1_success,acteur2_success,director_success,cast_success,acteur1,acteur2,acteur3)
-        ajouter_valeures(title, country,genre,date,durée,acteurs,acteur1_success,acteur2_success,director_success,cast_success)
-        print('ok2222222222222222222222222222')
+        print('okkkkkkkkkkkkkkkkkkk')
+        compteur+=1
+        print('arr1', compteur)
+# dico_genre:{'Comédie musicale': 'Comédie', 'Animation': 'Animation', 'Comédie': 'Comédie', 'Thriller': 'Thriller', 'Romance': 'Romance', 'Guerre': 'Guerre', 'Famille': 'Film familial', 'Drame': 'Drame', 'Comédie dramatique': 'Comédie dramatique', 'Musical': 'Musical', 'Arts Martiaux': 'Arts martiaux', 'Fantastique': 'Fantasy', 'Science fiction': 'Science Fiction', 'Western': 'Western', 'Action': 'Animation', 'Péplum': 'Péplum', 'Aventure': 'Aventure - Action'}
+# class MoisPrecedentSpider(CrawlSpider):
+    
+#     name = "moisprecedent"
+#     allowed_domains = ["allocine.fr"]
+    
+#     def start_requests(self):
+#         mode = getattr(self, 'mode', 'moisdavant') 
+        
+#         date_actuelle = datetime.now()   
+#         dernier_jour_mois_precedent = ((date_actuelle.replace(day=1)) - timedelta(days=1)).strftime("%d/%m/%Y")
+
+#         mois = dernier_jour_mois_precedent[3:5]
+#         annee = dernier_jour_mois_precedent[6:10]
+        
+#         url = f"https://www.allocine.fr/film/agenda/mois/mois-{annee}-{mois}/"
+#         yield scrapy.Request(url, callback=self.parse_start1)
+        
+#     def parse_start1(self, response):
+#         for link in response.css('.month-movies-link::attr(href)').getall():
+#             yield response.follow(link, self.parse_movie_details)
+           
+#     def parse_movie_details(self, response):
+#         items = PredictionsItem()
+        
+#         title = response.css('.titlebar-title-lg::text').get()
+#         # if response.css('div.meta-body-item>span.light::text')[-1].get().strip() == 'Titre original':
+#         #     title = response.css('div.meta-body-item::text')[-1].get()
+#         # else:
+#         #     title = ''
+#         durée = response.css('div.meta-body-item.meta-body-info::text')[3].get()
+#         date = convert_to_iso8601(response.css('div.meta-body-item.meta-body-info>span.blue-link::text').get())
+#         print(date)
+#         genre = l_s(response.css('div.meta-body-item.meta-body-info>span::text')[3:].getall())
+#         directeur = response.css('div.meta-body-item.meta-body-direction>span.blue-link::text').get()
+#         distributeur = response.css('div.item:nth-child(3)>:nth-child(2)::text').get()
+#         print(distributeur)
+#         acteurs = l_s(response.css('.meta-body-actor.meta-body-item>span::text')[1:].getall())
+#         country = l_s(response.css('span.that>.nationality::text').getall())
+#         durée=convert_to_minutes(durée)
+#         ############# nettoyage avant insertion SQL   ##########
+#         title=title.strip().lower()
+#         genre=map_genre(genre)
+#         date=convert_to_iso8601(date)
+#         print(date)
+#         print(acteurs)
+#         country=extract_first_name(country)
+        
+#         acteur1=extract_first_name(acteurs)
+#         acteur2=extract_2_name(acteurs)
+#         acteur3=extract_3_name(acteurs)
+#         # acteur1=acteur1[0]
+#         # acteur2=acteur2[0]
+#         print(type(acteur1))
+        
+#         acteur1_success=map_acteur1(acteur1)
+#         acteur2_success=map_acteur2(acteur2)
+#         director_success=map_director(directeur)
+        
+        
+#         print(acteur1)
+#         print(acteur2)
+#         print(acteur3)
+#         print(acteur1_success)
+#         cast_success=(acteur1_success + acteur2_success + director_success)/3
+        
+#         print(cast_success)
+        
+#         print(title, country,genre,date,durée,acteurs,acteur1_success,acteur2_success,director_success,cast_success,acteur1,acteur2,acteur3)
+#         ajouter_valeures(title, country,genre,date,durée,acteurs,acteur1_success,acteur2_success,director_success,cast_success)
+#         print('ok2222222222222222222222222222')
 # df_test = pd.DataFrame({
 #     'title': ['Pyramide'],
 #     'country': ['France'],
