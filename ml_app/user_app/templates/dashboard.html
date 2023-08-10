@@ -3,81 +3,60 @@
 
 {% block content %}
   <style>
+    /* ... Styles précédents ... */
+
+    /* ... Styles pour les détails ... */
     .film-details {
       display: none;
+      margin-top: 5px;
+    }
+    
+    .film-details table {
+      border-collapse: collapse;
     }
 
-    .expand-button {
-      cursor: pointer;
-      background-color: #007bff;
-      color: #fff;
-      border: none;
-      padding: 5px 10px;
-      border-radius: 5px;
+    .film-details table td {
+      padding: 3px 5px;
+      border-bottom: 1px solid #ccc;
     }
 
-    /* Ajouter un peu d'espace entre les boutons et les détails */
+    /* Ajouter une classe aux lignes pour le sélecteur jQuery */
     .film-row {
       margin-bottom: 10px;
+      cursor: pointer;
+      overflow-x: auto; /* Activer le défilement horizontal */
     }
   </style>
 
-  <h2>Dashboard</h2>
-  <div class="alert alert-success">
-    Bienvenue {{ user.username }} !
-  </div>
-  
-  <a href="{% url 'user_app:logout' %}">Déconnexion</a>
-  
-  <h1>Dashboard</h1>
-<table class="table table-bordered">
+  <!-- ... Le reste du contenu ... -->
+
+  <table class="table table-bordered">
     <thead>
-        <tr>
-            <th>Titre</th>
-            <th>Genre</th>
-            <th>Pays</th>
-            <th>Acteurs</th>
-            <th>Durée</th>
-            <th>Entrées prévues</th>
-        </tr>
+      <!-- ... En-tête de la table ... -->
     </thead>
     <tbody>
-        {% for row in data_frame.itertuples %}
-        <tr>
-            <td>{{ row.title }}</td>
-            <td>{{ row.genre }}</td>
-            <td>{{ row.country }}</td>
-            <td>{{ row.acteurs }}</td>
-            <td>{{ row.durée }}min</td>
-            <td>{{ row.evaluation_ML }}</td>
-            
-            
-        </tr>
-        {% endfor %}
+      {% for row in data_frame.itertuples %}
+      <tr class="film-row">
+        <td>{{ row.title }}</td>
+        <td>{{ row.genre }}</td>
+        <td>{{ row.country }}</td>
+        <td>{{ row.acteurs }}</td>
+        <td>{{ row.durée }} min</td>
+        <td>{{ row.evaluation_ML }}</td>
+      </tr>
+      <tr class="film-details">
+        <td colspan="6">{% include 'film_detail.html' %}</td>
+      </tr>
+      {% endfor %}
     </tbody>
-</table>
+  </table>
 
   <script>
     $(document).ready(function() {
-      $('.expand-button').click(function() {
-        const details = $(this).closest('.film-row').next('.film-details');
+      $('.film-row').click(function() {
+        const details = $(this).next('.film-details');
         details.slideToggle();
-
-        // Changer le texte du bouton en fonction de l'état
-        if ($(this).text() === "+") {
-          $(this).text("-");
-        } else {
-          $(this).text("+");
-        }
       });
     });
   </script>
 {% endblock %}
-
-
-
-
-
-
-
-
