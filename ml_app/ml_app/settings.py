@@ -98,6 +98,14 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
+    },
+    'azure_db': {
+        'ENGINE': 'django.db.backends.sqlserver',
+        'NAME': 'BDD_boxoffice',
+        'USER': 'project_affluence_cinema',
+        'PASSWORD': '*Boxoffice1',
+        'HOST': 'projet-affluence-cinema-mlrecap.database.windows.net',
+        'PORT': '1433',
     }
 }
 
