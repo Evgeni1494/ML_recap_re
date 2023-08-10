@@ -3,6 +3,8 @@ import pyodbc
 import pandas as pd
 
 def test_sql(request):
+    """Se connecte à une base de données Azure SQL, exécute une requête SQL pour récupérer 
+    les 10 premières entrées de la table [dbo].[bdd_model_ML_cat], et renvoie les résultats."""
     try:
         # Se connecter à la base de données Azure SQL
         connection = pyodbc.connect(
@@ -35,6 +37,10 @@ def monitoring(request):
 
 
 def combined_view(request):
+        """
+        Récupère les données des fonctions `monitoring` et `test_sql`, les combine, 
+        puis renvoie les données combinées pour être affichées dans le template 'monitoring.html'.
+        """
     
         # Récupérer les données des deux vues
         monitoring_data = monitoring(request)

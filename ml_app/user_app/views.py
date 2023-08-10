@@ -12,8 +12,10 @@ from django.urls import reverse
 from datetime import datetime, timedelta
 
 
-
 def send_email_function():
+    """
+    Envoie un e-mail avec un sujet et un contenu définis à une liste de destinataires.
+    """
     subject = 'Sujet de l\'e-mail'
     message = 'Contenu du message de l\'e-mail'
     from_email = 'django.nostradamus@gmail.com'  # Utilisez l'adresse Gmail que vous avez configurée dans votre fichier settings.py
@@ -23,11 +25,18 @@ def send_email_function():
 
 
 def logout_view(request):
+    """
+    Déconnecte l'utilisateur et le redirige vers la page de connexion.
+    """
     django_logout(request)
     return redirect('user_app:login')
 
 
 def signup_view(request):
+    """
+    Gère l'inscription d'un nouvel utilisateur. Si la requête est POST et le formulaire est valide, 
+    enregistre le nouvel utilisateur. Sinon, affiche le formulaire d'inscription.
+    """
     if request.method == 'POST':
         form = SignupForm(request.POST)
         if form.is_valid():
@@ -40,6 +49,10 @@ def signup_view(request):
     
 
 def login_view(request):
+    """
+    Gère la connexion d'un utilisateur. Si la requête est POST et le formulaire est valide,
+    authentifie l'utilisateur et le redirige vers le tableau de bord. Sinon, affiche le formulaire de connexion.
+    """
     if request.method == 'POST':
         form = LoginForm(request, request.POST)
         if form.is_valid():
@@ -60,6 +73,10 @@ def login_view(request):
 
 
 def reset_password(request):
+    """
+    Gère la demande de réinitialisation du mot de passe. Si un utilisateur avec l'adresse e-mail fournie existe, 
+    génère un lien unique de réinitialisation du mot de passe et l'envoie à l'utilisateur.
+    """
     if request.method == 'POST':
         email = request.POST['email']
         try:
@@ -90,6 +107,10 @@ def reset_password(request):
 
 
 def reset_password_confirm(request, reset_token):
+    """
+    Gère la confirmation de la réinitialisation du mot de passe à l'aide d'un jeton unique.
+    Si le jeton est valide, permet à l'utilisateur de définir un nouveau mot de passe.
+    """
     if request.method == 'POST':
         # Récupérez l'utilisateur associé au jeton unique
         try:
@@ -112,108 +133,6 @@ def reset_password_confirm(request, reset_token):
     return render(request, 'reset_password_confirm.html')
 
 
-def get_prediction(title, country, genre, date, durée, acteurs, 
-                   acteur1_success, acteur2_success, director_success, cast_success):
-    
-    # Define the request data
-    data = {
-        "Inputs": {
-            "data": [
-                {
-                    "title": title,
-                    "country": country,
-                    "genre": genre,
-                    "date": date,
-                    "durée": durée,
-                    "acteurs": acteurs,
-                    "acteur1_success": acteur1_success,
-                    "acteur2_success": acteur2_success,
-                    "director_success": director_success,
-                    "cast_success": cast_success
-                }
-            ]
-        },
-        "GlobalParameters": 0.0
-    }
-
-    # Convert the data to a string and encode it
-    body = str.encode(json.dumps(data))
-
-    # Define the API URL and key
-    url = 'https://movie-predictor.germanywestcentral.inference.ml.azure.com/score'
-    api_key = 'ga2YYNrFEWqxdIMGcSvO9xwJoFW0lZxJ'  # API KEY
-
-    # Define the headers for the request
-    headers = {
-        'Content-Type': 'application/json', 
-        'Authorization': 'Bearer ' + api_key, 
-        'azureml-model-deployment': 'movie-predictor'
-    }
-
-    # Make the request to the API
-    req = urllib.request.Request(url, body, headers)
-    
-    try:
-        response = urllib.request.urlopen(req)
-        result = response.read()
-        prediction = json.loads(result)
-        
-        # Adding title to the prediction dictionary
-        prediction['title'] = title
-        
-        # Assuming the prediction result is in the 'Results' key
-        if 'Results' in prediction:
-            prediction['Results'] = [value / 3000 for value in prediction['Results']]
-        
-        return prediction
-    except urllib.error.HTTPError as error:
-        return {"error": str(error.code), "message": error.read().decode("utf8", 'ignore')}
-
-
-
-def get_predictions_for_all_rows(request):
-    try:
-        # Connect to the Azure SQL database
-        connection = pyodbc.connect(
-            'DRIVER={ODBC Driver 18 for SQL Server};'
-            'SERVER=projet-affluence-cinema-mlrecap.database.windows.net;'
-            'DATABASE=BDD_boxoffice;'
-            'UID=project_affluence_cinema;'
-            'PWD=*Boxoffice1;'
-        )
-
-        # Execute the SQL query
-        query = "SELECT * FROM [dbo].[actualisation_scrap]"
-        data_frame = pd.read_sql_query(query, connection)
-
-        # Close the connection
-        connection.close()
-
-        predictions = []
-
-        # Iterate over each row in the data frame and get predictions
-        for _, row in data_frame.iterrows():
-            prediction = get_prediction(
-                title=row["title"],
-                country=row["country"],
-                genre=row["genre"],
-                date=row["date"],
-                durée=row["durée"],
-                acteurs=row["acteurs"],
-                acteur1_success=row["acteur1_success"],
-                acteur2_success=row["acteur2_success"],
-                director_success=row["director_success"],
-                cast_success=row["cast_success"]
-            )
-            predictions.append(prediction)
-
-        return {'predictions': predictions, 'is_empty': data_frame.empty}
-    except Exception as e:
-        return {'error_message': str(e)}
-
-
-
-
 
 
 @login_required
@@ -227,6 +146,10 @@ def dashboard_view(request):
 
 
 def conn_sql(request):
+    """
+    Se connecte à une base de données Azure SQL et récupère les entrées de la table [dbo].[actualisation_scrap] 
+    entre le prochain mercredi et le mardi suivant.
+    """
     try:
         connection = pyodbc.connect(
             'DRIVER={ODBC Driver 18 for SQL Server};'
@@ -255,6 +178,10 @@ def conn_sql(request):
 
 
 def combined_view(request):
+        """
+        Récupère les données des fonctions `dashboard_view` et `conn_sql`, les combine,
+        puis renvoie les données combinées pour être affichées dans le template 'dashboard.html'.
+        """
     
         # Récupérer les données des deux vues
         dashboard_view_data = dashboard_view(request)
