@@ -21,6 +21,64 @@
         </tbody>
     </table>
 
+
+    /* Ajouter un peu d'espace entre les boutons et les détails */
+    .film-row {
+      margin-bottom: 10px;
+    }
+  </style>
+
+  <h2>Dashboard</h2>
+  <div class="alert alert-success">
+    Bienvenue {{ user.username }} !
+  </div>
+  
+  <a href="{% url 'user_app:logout' %}">Déconnexion</a>
+  
+  <h1>Dashboard</h1>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Titre</th>
+            <th>Genre</th>
+            <th>Pays</th>
+            <th>Acteurs</th>
+            <th>Durée</th>
+            <th>Entrées prévues</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in data_frame.itertuples %}
+        <tr>
+            <td>{{ row.title }}</td>
+            <td>{{ row.genre }}</td>
+            <td>{{ row.country }}</td>
+            <td>{{ row.acteurs }}</td>
+            <td>{{ row.durée }}min</td>
+            <td>{{ row.evaluation_ML }}</td>
+            
+            
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+  <script>
+    $(document).ready(function() {
+      $('.expand-button').click(function() {
+        const details = $(this).closest('.film-row').next('.film-details');
+        details.slideToggle();
+
+        // Changer le texte du bouton en fonction de l'état
+        if ($(this).text() === "+") {
+          $(this).text("-");
+        } else {
+          $(this).text("+");
+        }
+      });
+    });
+  </script>
+
 {% endblock %}
 
 

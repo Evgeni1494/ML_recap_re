@@ -14,7 +14,9 @@ def test_sql(request):
         )
 
         # Exécuter la requête SQL
-        query = "SELECT TOP 5 id, titre, nbre_entrees FROM [dbo].[bdd_model_ML_cat]"
+
+        query = "SELECT TOP 10 id, titre, nbre_entrees FROM [dbo].[bdd_model_ML_cat]"
+
         data_frame = pd.read_sql_query(query, connection)
 
         # Fermer la connexion
@@ -42,4 +44,5 @@ def combined_view(request):
         combined_data = {**monitoring_data, **test_sql_data}
 
         return render(request, 'monitoring.html', combined_data)
-    
+
+
