@@ -30,34 +30,32 @@
   <a href="{% url 'user_app:logout' %}">Déconnexion</a>
   
   <h1>Dashboard</h1>
-  <table>
+<table class="table table-bordered">
     <thead>
-      <tr>
-        <th>Titre</th>
-        <th>Prediction</th>
-        <th>Confiance</th>
-      </tr>
+        <tr>
+            <th>Titre</th>
+            <th>Genre</th>
+            <th>Pays</th>
+            <th>Acteurs</th>
+            <th>Durée</th>
+            <th>Entrées prévues</th>
+        </tr>
     </thead>
     <tbody>
-      {% for film in films %}
-      <tr class="film-row">
-        <td>{{ film.title }}</td>
-        <td>{{ film.prediction }}</td>
-        <td>{{ film.confiance }}</td>
-        <!-- Ajouter le bouton "+" -->
-        <td><button class="expand-button">+</button></td>
-      </tr>
-      <tr class="film-details">
-        <td colspan="4"> <!-- Utiliser colspan="4" pour fusionner avec toutes les colonnes -->
-          <p><strong>Box Office:</strong> {{ film.box_office }}</p>
-          <p><strong>Genre:</strong> {{ film.genre }}</p>
-          <p><strong>Actors:</strong> {{ film.actors }}</p>
-          <p><strong>Date:</strong> {{ film.date }}</p>
-        </td>
-      </tr>
-      {% endfor %}
+        {% for row in data_frame.itertuples %}
+        <tr>
+            <td>{{ row.title }}</td>
+            <td>{{ row.genre }}</td>
+            <td>{{ row.country }}</td>
+            <td>{{ row.acteurs }}</td>
+            <td>{{ row.durée }}min</td>
+            <td>{{ row.evaluation_ML }}</td>
+            
+            
+        </tr>
+        {% endfor %}
     </tbody>
-  </table>
+</table>
 
   <script>
     $(document).ready(function() {

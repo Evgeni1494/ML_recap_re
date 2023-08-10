@@ -5,10 +5,11 @@ from .forms import SignupForm, LoginForm
 from .models import User, FilmData
 from django.contrib.auth import authenticate, login
 from django.contrib.auth import logout as django_logout
-import uuid
+import uuid, pyodbc, pandas as pd
 from django.core.mail import send_mail
 from django.conf import settings
 from django.urls import reverse
+from datetime import datetime, timedelta
 
 
 def send_email_function():
@@ -115,11 +116,52 @@ def reset_password_confirm(request, reset_token):
 @login_required
 def dashboard_view(request):
     # Récupérer les 10 films classés selon la prédiction du plus grand au plus petit
-    films = FilmData.objects.all().order_by('-prediction')[:10]
-    context = {'films': films}
-    return render(request, 'dashboard.html', context)
+    # films = FilmData.objects.all().order_by('-prediction')[:10]
+    # context = {'films': films}
+    # return render(request, 'dashboard.html', context)
+    return {}
 
 
+def conn_sql(request):
+    try:
+        connection = pyodbc.connect(
+            'DRIVER={ODBC Driver 18 for SQL Server};'
+            'SERVER=projet-affluence-cinema-mlrecap.database.windows.net;'
+            'DATABASE=BDD_boxoffice;'
+            'UID=project_affluence_cinema;'
+            'PWD=*Boxoffice1;' 
+        )
+        # Calculer les dates du prochain mercredi et du mardi suivant
+        today = datetime.today()
+        next_wednesday = today + timedelta(days=(2 - today.weekday()) % 7)
+        next_tuesday = next_wednesday + timedelta(days=6)
+        
+        # Convertir les dates en format de chaîne pour la requête SQL
+        next_wednesday_str = next_wednesday.strftime('%Y-%m-%dT%H:%M:%S.%f')
+        next_tuesday_str = next_tuesday.strftime('%Y-%m-%dT%H:%M:%S.%f')
+        query = f"SELECT * FROM [dbo].[actualisation_scrap] WHERE [date] BETWEEN '{next_wednesday_str}' AND '{next_tuesday_str}'"
+        # query = "SELECT TOP (10) * FROM [dbo].[actualisation_scrap1]"
+        data_frame = pd.read_sql_query(query, connection)
+        
+        connection.close()
+        
+        return {'data_frame': data_frame, 'is_empty': data_frame.empty}
+    except Exception as e:
+        return {'error_message': str(e)}
 
 
+def combined_view(request):
+    
+        # Récupérer les données des deux vues
+        dashboard_view_data = dashboard_view(request)
+        conn_sql_data = conn_sql(request)
 
+        # Combinez les données
+        combined_data = {
+            'data_frame': conn_sql_data['data_frame'],
+            'is_empty': conn_sql_data['is_empty'],
+            'dashboard_view_data': dashboard_view_data  # Ajoutez d'autres clés du dictionnaire de votre fonction 'evaluation' si nécessaire
+        }
+
+
+        return render(request, 'dashboard.html', combined_data)
