@@ -63,7 +63,7 @@ def login_view(request):
             if user is not None:
                 login(request, user)
                 messages.success(request, f"Bienvenue {username} !")
-                return redirect('user_app:combined_view')  # Assurez-vous d'avoir une URL nommée 'dashboard' dans votre application 'user_app'
+                return redirect('user_app:combined_view_scrap')  # Assurez-vous d'avoir une URL nommée 'dashboard' dans votre application 'user_app'
             else:
                 messages.error(request, "Identifiants invalides")
     else:
@@ -203,6 +203,6 @@ def combined_view_scrap(request):
 
 def scrap(request):
     if request.method == 'POST':
-        project_dir = '/home/apprenant/Documents/DEV_IA/ML-recap_Agile/ML_recap_re/ml_app/scraping'
+        project_dir = '/app/scraping'
         subprocess.run(['scrapy', 'crawl', 'predictions11'], cwd=project_dir)
         return HttpResponse("Scraping démarré avec succès!")
