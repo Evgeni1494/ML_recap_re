@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+{% block content %}
+  <h1>Actualiser</h1>
+  <form action="{% url 'user_app:scrap' %}" method="post">
+    {% csrf_token %}
+    <button type="submit">Lancer</button>
+  </form>
+
+  <style>
+    /* ... Styles précédents ... */
+
+    /* ... Styles pour les détails ... */
+    .film-details {
+      display: none;
+    }
+
+    /* ... Styles pour la table principale ... */
+    .film-table {
+      width: auto;
+      display: flex;
+      flex-direction: row;
+      overflow-x: auto; /* Activer le défilement horizontal */
+    }
+
+    /* Styles pour les cellules */
+    .film-cell {
+      width: 300px; /* Largeur des cellules */
+      min-width: 300px;
+      padding: 10px;
+      text-align: left; /* Aligner le contenu à gauche */
+      background-color: rgba(0, 191, 255, 0.05); /* Couleur bleu ciel avec opacité 5% */
+      border-radius: 10px; /* Coins arrondis de 10px */
+      margin-right: 50px; /* Espace de 10px entre les éléments */
+    }
+
+    /* Styles pour les images */
+    .film-image img {
+      width: 100%; /* Remplir la largeur de la cellule */
+      height: auto; /* Adapter la hauteur de manière proportionnelle */
+    }
+  </style>
+
+  <!-- ... Le reste du contenu ... -->
+
+  <div class="film-table">
+    {% for row in data_frame.itertuples %}
+    <div class="film-cell">
+      <div class="film-image">
+        <img src="https://image.tmdb.org/t/p/w500{{ row.lien_poster }}" alt="{{ row.title }} Poster">
+      </div>
+      <h4>{{ row.title|title }}</h4>
+      <p>Genre: {{ row.genre }}</p>
+      <p>Pays: {{ row.country }}</p>
+      <p>Acteurs: {{ row.acteurs }}</p>
+      <p>Durée: {{ row.durée }} min</p>
+      <p>Date de sortie: {{ row.date }}<p>
+      <p>Entrées attendues: <b>{{ row.evaluation_ML }}</b></p>
+    </div>
+    {% endfor %}
+  </div>
+{% endblock %}
+

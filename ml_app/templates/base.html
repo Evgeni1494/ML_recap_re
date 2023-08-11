@@ -1,0 +1,150 @@
+{% comment %} {% load static %} {% endcomment %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% comment %} <link rel="stylesheet" href="{% static 'style.css' %}"> {% endcomment %}
+    <style>
+        body {
+            font-family: Roboto, sans-serif;
+            background-color: #04030a ;
+            color: black; /* Texte blanc */
+            margin: 0; /* Réinitialiser les marges par défaut du corps */
+        }
+    
+        header {
+            background-color: #333; /* Fond pour l'en-tête */
+            padding: 10px;
+            text-align: center;
+            margin-top: 30px;
+        }
+    
+        nav a {
+            margin: 0 10px;
+            text-decoration: none;
+            transition: color 0.3s;
+            color: #ccc; /* Couleur de lien grise par défaut */
+        }
+        
+        nav a:link {
+            color: #ccc; /* Couleur de lien grise pour les liens non visités */
+        }
+    
+        
+        nav a:hover {
+            color: #c6e4ff; /* Couleur de lien bleu nuit en état de survol */
+        }
+    
+        main {
+            background: linear-gradient(to bottom, rgba(250, 250, 250, 0.8), rgba(250, 250, 250, 0.8)), url('https://img.freepik.com/free-photo/background-paper-texture_1253-18.jpg?w=2000');
+            background-size: cover;
+            background-position: center;
+            padding: 20px;
+            text-align: center;
+            margin: 30px 60px;
+            border: 10px solid #000;
+            color: 0b253d;
+        }
+
+        main p, main h1, main h2, main h3, main h4, main h5, main h6 {
+            color: #082143; /* Couleur de texte en bleu nuit */
+        }
+    
+        footer {
+            background: linear-gradient(to bottom, rgba(116, 46, 46, 0.8), rgba(76, 30, 30, 0.8)), url('https://www.radermecker.com/cdn/shop/products/quart-collet-aniline-niagara-maroquinerie-zoom-fleur-havane_446x446.jpg?v=1652947351');
+            background-size: cover; /* Ajuster la taille de l'image de fond */
+            background-position: center; /* Centrer l'image de fond */
+            padding: 10px;
+            text-align: center;
+            margin-top: 20px;
+            border-radius: 10px;
+            margin: 0 15px;
+        }
+
+        .halo {
+            position: absolute;
+            top: -50%; /* Position au-dessus du haut de la page */
+            left: 0;
+            width: 100%;
+            height: 75%;
+            background: linear-gradient(to bottom, rgba(173, 216, 230, 0.5), transparent); /* Dégradé bleu très clair */
+            pointer-events: none; /* Permet aux éléments de passer à travers */
+            z-index: -1; /* Se place en dessous de tout */
+        }
+
+        .halo-left {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom-left, rgba(0, 0, 0, 0.5), transparent, black);
+            pointer-events: none;
+            z-index: -1;
+        }
+    
+        .halo-right {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom-right, black, transparent, rgba(0, 0, 0, 0.5));
+            pointer-events: none;
+            z-index: -1;
+        }
+        nav {
+            text-align: right; /* positionne les éléments de la nav à droite */
+        }
+    
+        nav a.signup-button {
+            background-color: #8b0000;  /* rouge velours */
+            padding: 5px 10px;
+            border-radius: 5px;
+            color: white; /* texte blanc pour le bouton */
+        }
+    
+        nav a.signup-button:hover {
+            background-color: #a52a2a; /* un peu plus clair pour le survol */
+        }
+    </style>
+    
+    
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Django App</title>
+    {% block css %}{% endblock %}
+</head>
+<body>
+    
+    <div class="halo-left"></div> <!-- Halo coin supérieur gauche -->
+    <div class="halo-right"></div> <!-- Halo coin supérieur droit -->
+    <div class="halo"></div>
+    <header>
+        <nav>{% if user.is_authenticated %}
+            <a href="/dashboard">Dashboard</a>
+            <a href="/evaluation">Evaluation</a>
+            <a href="/monitoring">Monitoring</a>
+            <a>        //        </a>
+            <a href="{% url 'user_app:logout' %}">Déconnexion</a>
+            <div class="alert alert-success">
+                Bienvenue {{ user.username }} !
+            </div>
+            {% endif %}
+            {% if not user.is_authenticated %}
+            <a href="/">Login</a>
+            <a href="/signup">Signup</a>
+            {% endif %}
+        </nav>
+        
+    </header>
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer>
+        Django App Footer
+    </footer>
+</body>
+</html>

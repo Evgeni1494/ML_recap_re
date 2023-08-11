@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <style>
+        /* Styles généraux */
+        .container {
+            font-family: Arial, sans-serif;
+        }
+
+        h1, h2 {
+            color: #333;
+        }
+
+        /* Styles du tableau */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 8px 15px;
+            border: 1px solid #ddd;
+        }
+
+        thead {
+            background-color: #f2f2f2;
+        }
+
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        th {
+            background-color: #333333; /* Gris foncé, mais pas trop noir */
+            color: white;
+        }
+    </style>
+
+    <div class="container mt-5">
+        <h1>Evaluation</h1>
+
+        <!-- Afficher le message d'erreur s'il existe -->
+        {% if error_message %}
+            <div class="alert alert-danger" role="alert">
+                {{ error_message }}
+            </div>
+        {% endif %}
+
+        <!-- Afficher les données de la base de données SQL si le DataFrame n'est pas vide -->
+        {% if not is_empty %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Titre</th>
+                        <th>Date</th>
+                        <th>Evaluation ML</th>
+                        <th>Ecart d'évaluation</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in data_eval.itertuples %}
+                    <tr>
+                        <td>{{ row.title }}</td>
+                        <td>{{ row.date }}</td>
+                        <td>{{ row.evaluation_ML }}</td>
+                        <td>{{ row.ecart_eval_predict }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+
+        <!-- Vous pouvez ajouter d'autres sections pour afficher d'autres données si nécessaire -->
+
+    </div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+{% endblock %}

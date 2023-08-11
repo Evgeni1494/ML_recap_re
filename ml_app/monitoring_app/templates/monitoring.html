@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% comment %} {% load static %} {% endcomment %}
+
+{% block content %}
+    {% comment %} <link rel="stylesheet" type="text/css" href="{% static 'monitoring_app/style.css' %}"> {% endcomment %}
+
+    <!DOCTYPE html>
+    <html lang="fr">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Monitoring</title>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    </head>
+    <body>
+        <div class="container mt-5">
+            <h1>Monitoring</h1>
+    
+            <!-- Afficher le message d'erreur s'il existe -->
+            {% if error_message %}
+                <div class="alert alert-danger" role="alert">
+                    {{ error_message }}
+                </div>
+            {% endif %}
+    
+            <!-- Afficher les données de la base de données SQL si le DataFrame n'est pas vide -->
+            {% if not is_empty %}
+                <h2>Données SQL</h2>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Titre</th>
+                            <th>Nombre d'entrées</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in data_frame.itertuples %}
+                            <tr>
+                                <td>{{ row.id }}</td>
+                                <td>{{ row.titre }}</td>
+                                <td>{{ row.nbre_entrees }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% endif %}
+    
+            <!-- Vous pouvez ajouter d'autres sections pour afficher d'autres données si nécessaire -->
+    
+        </div>
+    
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    </body>
+    </html>
+    
+
+    
+{% endblock %}

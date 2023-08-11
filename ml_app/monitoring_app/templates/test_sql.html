@@ -1,0 +1,24 @@
+
+<table border="1">
+
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>titre</th>
+            <th>nbre_entrees</th>
+            <!-- Ajoutez plus de colonnes en fonction de vos données -->
+        </tr>
+    </thead>
+    <tbody>
+        {% for index, row in data_frame.iterrows %}
+        <tr>
+            <td>{{ row.id }}</td>
+            <td>{{ row.titre }}</td>
+            <td>{{ row.nbre_entrees }}</td>
+        </tr>
+
+        
+        {% endfor %}
+    </tbody>
+</table>
+
