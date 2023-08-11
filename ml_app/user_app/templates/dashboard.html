@@ -2,60 +2,57 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 {% block content %}
-    
 
+  <style>
+    /* ... Styles précédents ... */
+
+    /* ... Styles pour les détails ... */
+    .film-details {
+      display: none;
+    }
+
+    /* ... Styles pour la table principale ... */
+    .film-table {
+      width: auto;
+      display: flex;
+      flex-direction: row;
+      overflow-x: auto; /* Activer le défilement horizontal */
+    }
+
+    /* Styles pour les cellules */
+    .film-cell {
+      width: 300px; /* Largeur des cellules */
+      min-width: 300px;
+      padding: 10px;
+      text-align: left; /* Aligner le contenu à gauche */
+      background-color: rgba(0, 191, 255, 0.05); /* Couleur bleu ciel avec opacité 5% */
+      border-radius: 10px; /* Coins arrondis de 10px */
+      margin-right: 50px; /* Espace de 10px entre les éléments */
+    }
+
+    /* Styles pour les images */
+    .film-image img {
+      width: 100%; /* Remplir la largeur de la cellule */
+      height: auto; /* Adapter la hauteur de manière proportionnelle */
+    }
   </style>
-  
-  <h1>Dashboard</h1>
-<table class="table table-bordered">
-    <thead>
-        <tr>
-            <th>Titre</th>
-            <th>Genre</th>
-            <th>Pays</th>
-            <th>Acteurs</th>
-            <th>Durée</th>
-            <th>Entrées prévues</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for row in data_frame.itertuples %}
-        <tr>
-            <td>{{ row.title }}</td>
-            <td>{{ row.genre }}</td>
-            <td>{{ row.country }}</td>
-            <td>{{ row.acteurs }}</td>
-            <td>{{ row.durée }}min</td>
-            <td>{{ row.evaluation_ML }}</td>
-            
-            
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
 
-  <script>
-    $(document).ready(function() {
-      $('.expand-button').click(function() {
-        const details = $(this).closest('.film-row').next('.film-details');
-        details.slideToggle();
+  <!-- ... Le reste du contenu ... -->
 
-        // Changer le texte du bouton en fonction de l'état
-        if ($(this).text() === "+") {
-          $(this).text("-");
-        } else {
-          $(this).text("+");
-        }
-      });
-    });
-  </script>
-
+  <div class="film-table">
+    {% for row in data_frame.itertuples %}
+    <div class="film-cell">
+      <div class="film-image">
+        <img src="https://image.tmdb.org/t/p/w500{{ row.lien_poster }}" alt="{{ row.title }} Poster">
+      </div>
+      <h4>{{ row.title|title }}</h4>
+      <p>Genre: {{ row.genre }}</p>
+      <p>Pays: {{ row.country }}</p>
+      <p>Acteurs: {{ row.acteurs }}</p>
+      <p>Durée: {{ row.durée }} min</p>
+      <p>Entrées attendues: {{ row.evaluation_ML }}</p>
+    </div>
+    {% endfor %}
+  </div>
 {% endblock %}
-
-
-
-
-
-
-
 
