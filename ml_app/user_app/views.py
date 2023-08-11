@@ -10,7 +10,8 @@ from django.core.mail import send_mail
 from django.conf import settings
 from django.urls import reverse
 from datetime import datetime, timedelta
-
+import subprocess
+from django.http import HttpResponse, HttpResponseRedirect
 
 def send_email_function():
     """
@@ -182,24 +183,26 @@ def conn_sql(request):
     except Exception as e:
         return {'error_message': str(e)}
 
-@login_required
-def combined_view(request):
-        """
-        Récupère les données des fonctions `dashboard_view` et `conn_sql`, les combine,
-        puis renvoie les données combinées pour être affichées dans le template 'dashboard.html'.
-        """
+
+def combined_view_scrap(request):
+
     
-        # Récupérer les données des deux vues
-        dashboard_view_data = dashboard_view(request)
-        conn_sql_data = conn_sql(request)
+    # Récupérer les données des deux vues
+    dashboard_view_data = dashboard_view(request)
+    conn_sql_data = conn_sql(request)
+
+    # Combinez les données
+    combined_data = {
+        'data_frame': conn_sql_data['data_frame'],
+        'is_empty': conn_sql_data['is_empty'],
+        'dashboard_view_data': dashboard_view_data  # Ajoutez d'autres clés du dictionnaire de votre fonction 'evaluation' si nécessaire
+    }
+
+    return render(request, 'dashboard.html', combined_data)
 
 
-        # Combinez les données
-        combined_data = {
-            'data_frame': conn_sql_data['data_frame'],
-            'is_empty': conn_sql_data['is_empty'],
-            'dashboard_view_data': dashboard_view_data  # Ajoutez d'autres clés du dictionnaire de votre fonction 'evaluation' si nécessaire
-        }
-
-
-        return render(request, 'dashboard.html', combined_data)
+def scrap(request):
+    if request.method == 'POST':
+        project_dir = '/home/apprenant/Documents/DEV_IA/ML-recap_Agile/ML_recap_re/ml_app/scraping'
+        subprocess.run(['scrapy', 'crawl', 'predictions11'], cwd=project_dir)
+        return HttpResponse("Scraping démarré avec succès!")
