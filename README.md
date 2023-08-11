@@ -1,4 +1,4 @@
-# Projet Nostradamus Cinéma
+# Projet PremièreVue Cinéma
 
 Ce projet est conçu pour prédire le nombre d'entrées d'un film au cinéma qui est capable de capter 1/3000 de personnes en france qui vont au cinéma, la connexion à une base de données Azure SQL pour récupérer des informations liées au cinéma, et afficher ces informations sur un tableau de bord.
 Fonctionnalités principales
@@ -25,7 +25,22 @@ Fonctionnalités principales
     Connectez vous.
     Recuperez les informations sur les sorties et les prédictions. (ça peut prendre un peu de temps)
 
+# Récolte des données
 
+Les données on été récoltées tout au long du projet par automatisation.
+
+    Source des données d'entraînement:
+        - allocine.fr
+        - jpbox-office.com
+        - l'API de tmdb.com
+
+    Source des données pour la prédiction sur le nombre d'entrées des films prochainement à l'affiche:
+        - allocine.fr
+
+    Les données réelles de boxoffice sur la première semaine de sortie des films sur:
+        -jpbox-office.com
+
+    - Sur l'app, vous trouverez un bouton pour actualiser les données
 
 # Le modele.
 

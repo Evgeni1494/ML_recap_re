@@ -125,12 +125,14 @@
             <a href="/dashboard">Dashboard</a>
             <a href="/evaluation">Evaluation</a>
             <a href="/monitoring">Monitoring</a>
+            <a>        //        </a>
             <a href="{% url 'user_app:logout' %}">Déconnexion</a>
             <div class="alert alert-success">
                 Bienvenue {{ user.username }} !
             </div>
             {% endif %}
             {% if not user.is_authenticated %}
+            <a href="/">Login</a>
             <a href="/signup">Signup</a>
             {% endif %}
         </nav>
