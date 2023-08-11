@@ -11,7 +11,7 @@ from django.conf import settings
 from django.urls import reverse
 from datetime import datetime, timedelta
 import subprocess
-
+from django.http import HttpResponse, HttpResponseRedirect
 
 def send_email_function():
     """
@@ -183,10 +183,8 @@ def conn_sql(request):
     except Exception as e:
         return {'error_message': str(e)}
 
-@login_required
-def combined_view(request):
-    if request.method == 'POST':
-        subprocess.run(['scrapy', 'crawl', 'predictions11'])
+
+def combined_view_scrap(request):
 
     
     # Récupérer les données des deux vues
@@ -201,3 +199,10 @@ def combined_view(request):
     }
 
     return render(request, 'dashboard.html', combined_data)
+
+
+def scrap(request):
+    if request.method == 'POST':
+        project_dir = '/home/apprenant/Documents/DEV_IA/ML-recap_Agile/ML_recap_re/ml_app/scraping'
+        subprocess.run(['scrapy', 'crawl', 'predictions11'], cwd=project_dir)
+        return HttpResponse("Scraping démarré avec succès!")

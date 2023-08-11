@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     'user_app',
     'evaluation_app',
     'monitoring_app',
+    'scraping', 
 
 
 ]
